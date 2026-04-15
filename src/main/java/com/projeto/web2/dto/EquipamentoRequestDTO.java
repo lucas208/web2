@@ -13,17 +13,17 @@ import lombok.Setter;
 @NoArgsConstructor
 public class EquipamentoRequestDTO {
 
-    @NotBlank
+    @NotBlank(message = "Nome é obrigatório")
     private String nome;
 
-    @NotNull
-    @Min(0)
+    @NotNull(message = "Valor é obrigatório")
+    @Min(value = 1, message = "Valor deve ser maior que zero")
     private Double valor;
 
     @NotNull
     private Categoria categoria;
 
-    @NotNull
-    @Min(0)
+    @NotNull(message = "Quantidade é obrigatória")
+    @Min(value = 0, message = "Quantidade não pode ser negativa")
     private Integer quantidade;
 }

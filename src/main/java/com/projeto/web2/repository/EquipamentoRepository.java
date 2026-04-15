@@ -41,4 +41,12 @@ public class EquipamentoRepository {
             .collect(Collectors.toList());
     }
 
+    public boolean verificarNomeDuplicadoIgnorandoId(String nome, Long idIgnorado) {
+        return banco.values().stream()
+            .anyMatch(e ->
+                    e.getNome().equalsIgnoreCase(nome)
+                    && (idIgnorado == null || !e.getId().equals(idIgnorado))
+            );
+    }
+
 }

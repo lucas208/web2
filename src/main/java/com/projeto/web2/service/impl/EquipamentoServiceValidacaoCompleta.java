@@ -27,7 +27,7 @@ public class EquipamentoServiceValidacaoCompleta implements EquipamentoService {
     public EquipamentoResponseDTO criar(EquipamentoRequestDTO dto) {
         Equipamento e = toEntity(dto);
 
-        validarRegra(e);
+        validarRegra(e, null);
 
         Equipamento salvo = equipamentoRepository.salvar(e);
 
@@ -57,7 +57,7 @@ public class EquipamentoServiceValidacaoCompleta implements EquipamentoService {
         e.setCategoria(dto.getCategoria());
         e.setQuantidade(dto.getQuantidade());
 
-        validarRegra(e);
+        validarRegra(e, id);
 
         return toResponse(equipamentoRepository.salvar(e));
     }
@@ -67,13 +67,26 @@ public class EquipamentoServiceValidacaoCompleta implements EquipamentoService {
         equipamentoRepository.removerPorId(id);
     }
 
-    private void validarRegra(Equipamento e) {
-        if (e.getValor() <= 0) {
-            throw new RegraNegocioException("Valor deve ser maior que zero");
+    @Override
+    public List<EquipamentoResponseDTO> buscarPorCategoria(Categoria categoria) {
+        return equipamentoRepository.buscarPorCategoria(categoria)
+            .stream()
+            .map(this::toResponse)
+            .toList();
+    }
+
+    private void validarRegra(Equipamento e, Long idIgnorado) {
+        int total = equipamentoRepository.buscarTodos()
+            .stream()
+            .mapToInt(Equipamento::getQuantidade)
+            .sum();
+
+        if (total + e.getQuantidade() > 1000) {
+            throw new RegraNegocioException("Limite total de estoque excedido");
         }
 
-        if (e.getQuantidade() < 0) {
-            throw new RegraNegocioException("Quantidade não pode ser negativa");
+        if (equipamentoRepository.verificarNomeDuplicadoIgnorandoId(e.getNome(), idIgnorado)) {
+            throw new RegraNegocioException("Já existe um equipamento com esse nome");
         }
 
         if (e.getCategoria() == Categoria.INDUSTRIAL && e.getValor() < 500) {
