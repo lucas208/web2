@@ -4,6 +4,9 @@ import com.projeto.web2.model.Categoria;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+import java.util.List;
+import java.util.Set;
+
 @Getter
 @AllArgsConstructor
 public class EquipamentoResponseDTO {
@@ -12,4 +15,9 @@ public class EquipamentoResponseDTO {
     private Double valor;
     private Categoria categoria;
     private Integer quantidade;
+
+    private Long fornecedorId;
+    private List<Long> manutencoesIds;
+    private Set<Long> projetosIds;
+
 }

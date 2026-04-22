@@ -2,51 +2,17 @@ package com.projeto.web2.repository;
 
 import com.projeto.web2.model.Categoria;
 import com.projeto.web2.model.Equipamento;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.*;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.Collectors;
+import java.util.List;
 
 @Repository
-public class EquipamentoRepository {
+public interface EquipamentoRepository extends JpaRepository<Equipamento, Long> {
 
-    private final Map<Long, Equipamento> banco = new HashMap<>();
-    private final AtomicLong contadorId = new AtomicLong(1);
+    List<Equipamento> findByCategoria(Categoria categoria);
 
-    public Equipamento salvar(Equipamento equipamento) {
-        if(equipamento.getId() == null) {
-            equipamento.setId(contadorId.getAndIncrement());
-        }
-        banco.put(equipamento.getId(), equipamento);
-        return equipamento;
-    }
+    boolean existsByNomeIgnoreCase(String nome);
 
-    public List<Equipamento> buscarTodos(){
-        return new ArrayList<>(banco.values());
-    }
-
-    public Optional<Equipamento> buscarPorId(Long id) {
-        return Optional.ofNullable(banco.get(id));
-    }
-
-    public void removerPorId(Long id) {
-        banco.remove(id);
-    }
-
-    public List<Equipamento> buscarPorCategoria(Categoria categoria) {
-        return banco.values()
-            .stream()
-            .filter(e -> e.getCategoria() == categoria)
-            .collect(Collectors.toList());
-    }
-
-    public boolean verificarNomeDuplicadoIgnorandoId(String nome, Long idIgnorado) {
-        return banco.values().stream()
-            .anyMatch(e ->
-                    e.getNome().equalsIgnoreCase(nome)
-                    && (idIgnorado == null || !e.getId().equals(idIgnorado))
-            );
-    }
-
+    boolean existsByNomeIgnoreCaseAndIdNot(String nome, Long id);
 }

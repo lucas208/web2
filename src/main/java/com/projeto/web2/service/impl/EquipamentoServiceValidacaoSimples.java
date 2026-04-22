@@ -3,14 +3,15 @@ package com.projeto.web2.service.impl;
 import com.projeto.web2.dto.EquipamentoRequestDTO;
 import com.projeto.web2.dto.EquipamentoResponseDTO;
 import com.projeto.web2.exception.RegraNegocioException;
-import com.projeto.web2.model.Categoria;
-import com.projeto.web2.model.Equipamento;
+import com.projeto.web2.model.*;
 import com.projeto.web2.repository.EquipamentoRepository;
+import com.projeto.web2.repository.FornecedorRepository;
 import com.projeto.web2.service.EquipamentoService;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -19,8 +20,11 @@ public class EquipamentoServiceValidacaoSimples implements EquipamentoService {
 
     private final EquipamentoRepository equipamentoRepository;
 
-    public EquipamentoServiceValidacaoSimples(EquipamentoRepository equipamentoRepository) {
+    private final FornecedorRepository fornecedorRepository;
+
+    public EquipamentoServiceValidacaoSimples(EquipamentoRepository equipamentoRepository, FornecedorRepository fornecedorRepository) {
         this.equipamentoRepository = equipamentoRepository;
+        this.fornecedorRepository = fornecedorRepository;
     }
 
     @Override
@@ -29,28 +33,28 @@ public class EquipamentoServiceValidacaoSimples implements EquipamentoService {
 
         validarRegra(e, null);
 
-        Equipamento salvo = equipamentoRepository.salvar(e);
+        Equipamento salvo = equipamentoRepository.save(e);
 
         return toResponse(salvo);
     }
 
     @Override
     public List<EquipamentoResponseDTO> listar() {
-        return equipamentoRepository.buscarTodos()
+        return equipamentoRepository.findAll()
             .stream()
             .map(this::toResponse)
-            .collect(Collectors.toList());
+            .toList();
     }
 
     @Override
     public EquipamentoResponseDTO buscarPorId(Long id) {
-        Equipamento e = equipamentoRepository.buscarPorId(id).orElseThrow(() -> new RuntimeException("Equipamento não encontrado"));
+        Equipamento e = equipamentoRepository.findById(id).orElseThrow(() -> new RuntimeException("Equipamento não encontrado"));
         return toResponse(e);
     }
 
     @Override
     public EquipamentoResponseDTO atualizarPorId(Long id, EquipamentoRequestDTO dto) {
-        Equipamento e = equipamentoRepository.buscarPorId(id).orElseThrow(() -> new RuntimeException("Equipamento não encontrado"));
+        Equipamento e = equipamentoRepository.findById(id).orElseThrow(() -> new RuntimeException("Equipamento não encontrado"));
 
         e.setNome(dto.getNome());
         e.setValor(dto.getValor());
@@ -59,45 +63,53 @@ public class EquipamentoServiceValidacaoSimples implements EquipamentoService {
 
         validarRegra(e, id);
 
-        return toResponse(equipamentoRepository.salvar(e));
+        return toResponse(equipamentoRepository.save(e));
     }
 
     @Override
     public void removerPorId(Long id) {
-        equipamentoRepository.removerPorId(id);
+        equipamentoRepository.deleteById(id);
     }
 
     @Override
     public List<EquipamentoResponseDTO> buscarPorCategoria(Categoria categoria) {
-        return equipamentoRepository.buscarPorCategoria(categoria)
+        return equipamentoRepository.findByCategoria(categoria)
             .stream()
             .map(this::toResponse)
             .toList();
     }
 
     private void validarRegra(Equipamento e, Long idIgnorado) {
-        int total = equipamentoRepository.buscarTodos()
+        int totalSemAtual = equipamentoRepository.findAll()
             .stream()
+            .filter(eq -> idIgnorado == null || !eq.getId().equals(idIgnorado))
             .mapToInt(Equipamento::getQuantidade)
             .sum();
 
-        if (total + e.getQuantidade() > 1000) {
+        if (totalSemAtual + e.getQuantidade() > 1000) {
             throw new RegraNegocioException("Limite total de estoque excedido");
         }
 
-        if (equipamentoRepository.verificarNomeDuplicadoIgnorandoId(e.getNome(), idIgnorado)) {
+        boolean nomeDuplicado = (idIgnorado == null)
+            ? equipamentoRepository.existsByNomeIgnoreCase(e.getNome())
+            : equipamentoRepository.existsByNomeIgnoreCaseAndIdNot(e.getNome(), idIgnorado);
+
+        if (nomeDuplicado) {
             throw new RegraNegocioException("Já existe um equipamento com esse nome");
         }
     }
 
     private Equipamento toEntity(EquipamentoRequestDTO dto) {
-        return new Equipamento(
-            null,
-            dto.getNome(),
-            dto.getValor(),
-            dto.getCategoria(),
-            dto.getQuantidade()
-        );
+        Fornecedor fornecedor = fornecedorRepository.findById(dto.getFornecedorId())
+            .orElseThrow(() -> new RuntimeException("Fornecedor não encontrado"));
+
+        return Equipamento.builder()
+            .nome(dto.getNome())
+            .valor(dto.getValor())
+            .categoria(dto.getCategoria())
+            .quantidade(dto.getQuantidade())
+            .fornecedor(fornecedor)
+            .build();
     }
 
     private EquipamentoResponseDTO toResponse(Equipamento e) {
@@ -106,7 +118,18 @@ public class EquipamentoServiceValidacaoSimples implements EquipamentoService {
             e.getNome(),
             e.getValor(),
             e.getCategoria(),
-            e.getQuantidade()
+            e.getQuantidade(),
+            e.getFornecedor() != null ? e.getFornecedor().getId() : null,
+            e.getManutencoes() != null
+                ? e.getManutencoes().stream()
+                .map(Manutencao::getId)
+                .toList()
+                : List.of(),
+            e.getProjetos() != null
+                ? e.getProjetos().stream()
+                .map(Projeto::getId)
+                .collect(Collectors.toSet())
+                : Set.of()
         );
     }
 }
