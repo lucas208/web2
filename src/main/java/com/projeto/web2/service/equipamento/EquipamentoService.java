@@ -1,7 +1,7 @@
-package com.projeto.web2.service;
+package com.projeto.web2.service.equipamento;
 
-import com.projeto.web2.dto.EquipamentoRequestDTO;
-import com.projeto.web2.dto.EquipamentoResponseDTO;
+import com.projeto.web2.dto.equipamento.EquipamentoRequestDTO;
+import com.projeto.web2.dto.equipamento.EquipamentoResponseDTO;
 import com.projeto.web2.model.Categoria;
 
 import java.util.List;

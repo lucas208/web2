@@ -1,19 +1,17 @@
 package com.projeto.web2.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-@Data
-@AllArgsConstructor
+@Getter
+@Setter
 @NoArgsConstructor
+@AllArgsConstructor
 @Builder
 @Entity
 public class Equipamento {
@@ -31,16 +29,16 @@ public class Equipamento {
 
     private Integer quantidade;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "fornecedor_id")
     private Fornecedor fornecedor;
 
     @Builder.Default
-    @OneToMany(mappedBy = "equipamento", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "equipamento", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<Manutencao> manutencoes = new ArrayList<>();
 
     @Builder.Default
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "equipamento_projeto",
         joinColumns = @JoinColumn(name = "equipamento_id"),
         inverseJoinColumns = @JoinColumn(name = "projeto_id")

@@ -1,9 +1,7 @@
-package com.projeto.web2.dto;
+package com.projeto.web2.dto.equipamento;
 
 import com.projeto.web2.model.Categoria;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -14,10 +12,11 @@ import lombok.Setter;
 public class EquipamentoRequestDTO {
 
     @NotBlank(message = "Nome é obrigatório")
+    @Size(min = 3, message = "Nome deve ter pelo menos 3 caracteres")
     private String nome;
 
     @NotNull(message = "Valor é obrigatório")
-    @Min(value = 1, message = "Valor deve ser maior que zero")
+    @DecimalMin(value = "0.01", message = "Valor deve ser maior que zero")
     private Double valor;
 
     @NotNull(message = "Categoria é obrigatória")

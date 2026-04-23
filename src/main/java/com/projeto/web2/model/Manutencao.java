@@ -1,15 +1,14 @@
 package com.projeto.web2.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDate;
 
-@Data
-@AllArgsConstructor
+@Getter
+@Setter
 @NoArgsConstructor
+@AllArgsConstructor
 @Entity
 public class Manutencao {
 
@@ -21,7 +20,9 @@ public class Manutencao {
 
     private LocalDate data;
 
-    @ManyToOne
+    private Double custo;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "equipamento_id")
     private Equipamento equipamento;
 }

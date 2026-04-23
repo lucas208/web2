@@ -1,16 +1,15 @@
 package com.projeto.web2.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.HashSet;
 import java.util.Set;
 
-@Data
-@AllArgsConstructor
+@Getter
+@Setter
 @NoArgsConstructor
+@AllArgsConstructor
 @Entity
 public class Projeto {
 
@@ -20,7 +19,9 @@ public class Projeto {
 
     private String nome;
 
-    @ManyToMany(mappedBy = "projetos")
+    private String descricao;
+
+    @ManyToMany(mappedBy = "projetos", fetch = FetchType.LAZY)
     private Set<Equipamento> equipamentos = new HashSet<>();
 
 }

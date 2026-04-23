@@ -1,10 +1,10 @@
 package com.projeto.web2.controller;
 
-import com.projeto.web2.dto.EquipamentoRequestDTO;
-import com.projeto.web2.dto.EquipamentoResponseDTO;
+import com.projeto.web2.dto.equipamento.EquipamentoRequestDTO;
+import com.projeto.web2.dto.equipamento.EquipamentoResponseDTO;
 import com.projeto.web2.exception.RegraNegocioException;
 import com.projeto.web2.model.Categoria;
-import com.projeto.web2.service.EquipamentoService;
+import com.projeto.web2.service.equipamento.EquipamentoService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;

@@ -1,4 +1,4 @@
-package com.projeto.web2.dto;
+package com.projeto.web2.dto.equipamento;
 
 import com.projeto.web2.model.Categoria;
 import lombok.AllArgsConstructor;

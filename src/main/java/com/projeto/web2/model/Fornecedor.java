@@ -1,15 +1,14 @@
 package com.projeto.web2.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.List;
 
-@Data
-@AllArgsConstructor
+@Getter
+@Setter
 @NoArgsConstructor
+@AllArgsConstructor
 @Entity
 public class Fornecedor {
 
@@ -21,6 +20,6 @@ public class Fornecedor {
 
     private String cnpj;
 
-    @OneToMany(mappedBy = "fornecedor")
+    @OneToMany(mappedBy = "fornecedor", fetch = FetchType.LAZY)
     private List<Equipamento> equipamentos;
 }
