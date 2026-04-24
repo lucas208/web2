@@ -1,5 +1,7 @@
 package com.projeto.web2.service.equipamento;
 
+import com.projeto.web2.audit.model.LogAuditoria;
+import com.projeto.web2.audit.repository.LogAuditoriaRepository;
 import com.projeto.web2.dto.equipamento.EquipamentoRequestDTO;
 import com.projeto.web2.dto.equipamento.EquipamentoResponseDTO;
 import com.projeto.web2.exception.RegraNegocioException;
@@ -9,6 +11,7 @@ import com.projeto.web2.repository.FornecedorRepository;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -21,9 +24,12 @@ public class EquipamentoServiceValidacaoSimples implements EquipamentoService {
 
     private final FornecedorRepository fornecedorRepository;
 
-    public EquipamentoServiceValidacaoSimples(EquipamentoRepository equipamentoRepository, FornecedorRepository fornecedorRepository) {
+    private final LogAuditoriaRepository logAuditoriaRepository;
+
+    public EquipamentoServiceValidacaoSimples(EquipamentoRepository equipamentoRepository, FornecedorRepository fornecedorRepository, LogAuditoriaRepository logAuditoriaRepository) {
         this.equipamentoRepository = equipamentoRepository;
         this.fornecedorRepository = fornecedorRepository;
+        this.logAuditoriaRepository = logAuditoriaRepository;
     }
 
     @Override
@@ -33,6 +39,13 @@ public class EquipamentoServiceValidacaoSimples implements EquipamentoService {
         validarRegra(e, null);
 
         Equipamento salvo = equipamentoRepository.save(e);
+
+        LogAuditoria log = new LogAuditoria();
+        log.setEntidade("Equipamento");
+        log.setEntidadeId(salvo.getId());
+        log.setDataHora(LocalDateTime.now());
+
+        logAuditoriaRepository.save(log);
 
         return toResponse(salvo);
     }

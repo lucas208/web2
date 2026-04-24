@@ -1,5 +1,7 @@
 package com.projeto.web2.service.fornecedor;
 
+import com.projeto.web2.audit.model.LogAuditoria;
+import com.projeto.web2.audit.repository.LogAuditoriaRepository;
 import com.projeto.web2.dto.fornecedor.FornecedorRequestDTO;
 import com.projeto.web2.dto.fornecedor.FornecedorResponseDTO;
 import com.projeto.web2.exception.RegraNegocioException;
@@ -8,6 +10,7 @@ import com.projeto.web2.model.Fornecedor;
 import com.projeto.web2.repository.FornecedorRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -15,14 +18,25 @@ public class FornecedorServiceImpl implements FornecedorService {
 
     private final FornecedorRepository fornecedorRepository;
 
-    public FornecedorServiceImpl(FornecedorRepository fornecedorRepository) {
+    private final LogAuditoriaRepository logAuditoriaRepository;
+
+    public FornecedorServiceImpl(FornecedorRepository fornecedorRepository, LogAuditoriaRepository logAuditoriaRepository) {
         this.fornecedorRepository = fornecedorRepository;
+        this.logAuditoriaRepository = logAuditoriaRepository;
     }
 
     @Override
     public FornecedorResponseDTO criar(FornecedorRequestDTO dto) {
         Fornecedor fornecedor = toEntity(dto);
         Fornecedor salvo = fornecedorRepository.save(fornecedor);
+
+        LogAuditoria log = new LogAuditoria();
+        log.setEntidade("Fornecedor");
+        log.setEntidadeId(salvo.getId());
+        log.setDataHora(LocalDateTime.now());
+
+        logAuditoriaRepository.save(log);
+
         return toResponse(salvo);
     }
 

@@ -1,5 +1,7 @@
 package com.projeto.web2.service.projeto;
 
+import com.projeto.web2.audit.model.LogAuditoria;
+import com.projeto.web2.audit.repository.LogAuditoriaRepository;
 import com.projeto.web2.dto.projeto.ProjetoRequestDTO;
 import com.projeto.web2.dto.projeto.ProjetoResponseDTO;
 import com.projeto.web2.exception.RegraNegocioException;
@@ -8,6 +10,7 @@ import com.projeto.web2.model.Projeto;
 import com.projeto.web2.repository.ProjetoRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 
@@ -16,14 +19,25 @@ public class ProjetoServiceImpl implements ProjetoService {
 
     private final ProjetoRepository projetoRepository;
 
-    public ProjetoServiceImpl(ProjetoRepository projetoRepository) {
+    private final LogAuditoriaRepository logAuditoriaRepository;
+
+    public ProjetoServiceImpl(ProjetoRepository projetoRepository, LogAuditoriaRepository logAuditoriaRepository) {
         this.projetoRepository = projetoRepository;
+        this.logAuditoriaRepository = logAuditoriaRepository;
     }
 
     @Override
     public ProjetoResponseDTO criar(ProjetoRequestDTO dto) {
         Projeto projeto = toEntity(dto);
         Projeto salvo = projetoRepository.save(projeto);
+
+        LogAuditoria log = new LogAuditoria();
+        log.setEntidade("Projeto");
+        log.setEntidadeId(salvo.getId());
+        log.setDataHora(LocalDateTime.now());
+
+        logAuditoriaRepository.save(log);
+
         return toResponse(salvo);
     }
 

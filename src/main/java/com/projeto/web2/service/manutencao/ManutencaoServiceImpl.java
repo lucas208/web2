@@ -1,5 +1,7 @@
 package com.projeto.web2.service.manutencao;
 
+import com.projeto.web2.audit.model.LogAuditoria;
+import com.projeto.web2.audit.repository.LogAuditoriaRepository;
 import com.projeto.web2.dto.manutencao.ManutencaoRequestDTO;
 import com.projeto.web2.dto.manutencao.ManutencaoResponseDTO;
 import com.projeto.web2.exception.RegraNegocioException;
@@ -9,23 +11,36 @@ import com.projeto.web2.repository.EquipamentoRepository;
 import com.projeto.web2.repository.ManutencaoRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
 public class ManutencaoServiceImpl implements ManutencaoService {
 
     private final ManutencaoRepository manutencaoRepository;
+
     private final EquipamentoRepository equipamentoRepository;
 
-    public ManutencaoServiceImpl(ManutencaoRepository manutencaoRepository, EquipamentoRepository equipamentoRepository) {
+    private final LogAuditoriaRepository logAuditoriaRepository;
+
+    public ManutencaoServiceImpl(ManutencaoRepository manutencaoRepository, EquipamentoRepository equipamentoRepository, LogAuditoriaRepository logAuditoriaRepository) {
         this.manutencaoRepository = manutencaoRepository;
         this.equipamentoRepository = equipamentoRepository;
+        this.logAuditoriaRepository = logAuditoriaRepository;
     }
 
     @Override
     public ManutencaoResponseDTO criar(ManutencaoRequestDTO dto) {
         Manutencao m = toEntity(dto);
         Manutencao salvo = manutencaoRepository.save(m);
+
+        LogAuditoria log = new LogAuditoria();
+        log.setEntidade("Manutenção");
+        log.setEntidadeId(salvo.getId());
+        log.setDataHora(LocalDateTime.now());
+
+        logAuditoriaRepository.save(log);
+
         return toResponse(salvo);
     }
 
