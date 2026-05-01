@@ -8,6 +8,7 @@ import com.projeto.web2.exception.RegraNegocioException;
 import com.projeto.web2.model.Equipamento;
 import com.projeto.web2.model.Fornecedor;
 import com.projeto.web2.repository.FornecedorRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -51,14 +52,14 @@ public class FornecedorServiceImpl implements FornecedorService {
     @Override
     public FornecedorResponseDTO buscarPorId(Long id) {
         Fornecedor fornecedor = fornecedorRepository.findById(id)
-            .orElseThrow(() -> new RegraNegocioException("Fornecedor não encontrado"));
+            .orElseThrow(() -> new EntityNotFoundException("Fornecedor não encontrado"));
         return toResponse(fornecedor);
     }
 
     @Override
     public FornecedorResponseDTO atualizarPorId(Long id, FornecedorRequestDTO dto) {
         Fornecedor fornecedor = fornecedorRepository.findById(id)
-            .orElseThrow(() -> new RegraNegocioException("Fornecedor não encontrado"));
+            .orElseThrow(() -> new EntityNotFoundException("Fornecedor não encontrado"));
 
         fornecedor.setNome(dto.getNome());
         fornecedor.setCnpj(dto.getCnpj());
@@ -68,6 +69,9 @@ public class FornecedorServiceImpl implements FornecedorService {
 
     @Override
     public void removerPorId(Long id) {
+        if (!fornecedorRepository.existsById(id)) {
+            throw new EntityNotFoundException("Fornecedor não encontrado");
+        }
         fornecedorRepository.deleteById(id);
     }
 

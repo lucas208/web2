@@ -7,6 +7,7 @@ import com.projeto.web2.exception.RegraNegocioException;
 import com.projeto.web2.service.fornecedor.FornecedorService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
@@ -16,7 +17,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/fornecedores")
+@RequestMapping("/api/fornecedores")
 public class FornecedorController {
 
     private final FornecedorService fornecedorService;
@@ -25,27 +26,32 @@ public class FornecedorController {
         this.fornecedorService = fornecedorService;
     }
 
+    @PreAuthorize("hasAnyAuthority('ROLE_MASTER','ROLE_CONTRIBUTOR')")
     @PostMapping
     public ResponseEntity<FornecedorResponseDTO> criar(@RequestBody @Valid FornecedorRequestDTO dto) {
         return ResponseEntity.status(201).body(fornecedorService.criar(dto));
     }
 
+    @PreAuthorize("hasAnyAuthority('ROLE_MASTER','ROLE_CONTRIBUTOR','ROLE_AUDITOR')")
     @GetMapping
     public ResponseEntity<List<FornecedorResponseDTO>> listar() {
         return ResponseEntity.ok(fornecedorService.listar());
     }
 
+    @PreAuthorize("hasAnyAuthority('ROLE_MASTER','ROLE_CONTRIBUTOR','ROLE_AUDITOR')")
     @GetMapping("/{id}")
     public ResponseEntity<FornecedorResponseDTO> buscarPorId(@PathVariable Long id) {
         return ResponseEntity.ok(fornecedorService.buscarPorId(id));
     }
 
+    @PreAuthorize("hasAnyAuthority('ROLE_MASTER','ROLE_CONTRIBUTOR')")
     @PutMapping("/{id}")
     public ResponseEntity<FornecedorResponseDTO> atualizarPorId(@PathVariable Long id,
             @RequestBody @Valid FornecedorRequestDTO dto) {
         return ResponseEntity.ok(fornecedorService.atualizarPorId(id, dto));
     }
 
+    @PreAuthorize("hasAuthority('ROLE_MASTER')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> removerPorId(@PathVariable Long id) {
         fornecedorService.removerPorId(id);

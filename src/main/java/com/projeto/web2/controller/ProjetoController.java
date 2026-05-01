@@ -6,6 +6,7 @@ import com.projeto.web2.exception.RegraNegocioException;
 import com.projeto.web2.service.projeto.ProjetoService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
@@ -15,7 +16,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/projetos")
+@RequestMapping("/api/projetos")
 public class ProjetoController {
 
     private final ProjetoService projetoService;
@@ -24,27 +25,32 @@ public class ProjetoController {
         this.projetoService = projetoService;
     }
 
+    @PreAuthorize("hasAnyAuthority('ROLE_MASTER','ROLE_CONTRIBUTOR')")
     @PostMapping
     public ResponseEntity<ProjetoResponseDTO> criar(@RequestBody @Valid ProjetoRequestDTO dto) {
         return ResponseEntity.status(201).body(projetoService.criar(dto));
     }
 
+    @PreAuthorize("hasAnyAuthority('ROLE_MASTER','ROLE_CONTRIBUTOR','ROLE_AUDITOR')")
     @GetMapping
     public ResponseEntity<List<ProjetoResponseDTO>> listar() {
         return ResponseEntity.ok(projetoService.listar());
     }
 
+    @PreAuthorize("hasAnyAuthority('ROLE_MASTER','ROLE_CONTRIBUTOR','ROLE_AUDITOR')")
     @GetMapping("/{id}")
     public ResponseEntity<ProjetoResponseDTO> buscarPorId(@PathVariable Long id) {
         return ResponseEntity.ok(projetoService.buscarPorId(id));
     }
 
+    @PreAuthorize("hasAnyAuthority('ROLE_MASTER','ROLE_CONTRIBUTOR')")
     @PutMapping("/{id}")
     public ResponseEntity<ProjetoResponseDTO> atualizarPorId(@PathVariable Long id,
             @RequestBody @Valid ProjetoRequestDTO dto) {
         return ResponseEntity.ok(projetoService.atualizarPorId(id, dto));
     }
 
+    @PreAuthorize("hasAuthority('ROLE_MASTER')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> removerPorId(@PathVariable Long id) {
         projetoService.removerPorId(id);

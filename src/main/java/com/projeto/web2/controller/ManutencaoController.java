@@ -6,6 +6,7 @@ import com.projeto.web2.exception.RegraNegocioException;
 import com.projeto.web2.service.manutencao.ManutencaoService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
@@ -15,7 +16,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/manutencoes")
+@RequestMapping("/api/manutencoes")
 public class ManutencaoController {
 
     private final ManutencaoService manutencaoService;
@@ -24,27 +25,32 @@ public class ManutencaoController {
         this.manutencaoService = manutencaoService;
     }
 
+    @PreAuthorize("hasAnyAuthority('ROLE_MASTER','ROLE_CONTRIBUTOR')")
     @PostMapping
     public ResponseEntity<ManutencaoResponseDTO> criar(@RequestBody @Valid ManutencaoRequestDTO dto) {
         return ResponseEntity.status(201).body(manutencaoService.criar(dto));
     }
 
+    @PreAuthorize("hasAnyAuthority('ROLE_MASTER','ROLE_CONTRIBUTOR','ROLE_AUDITOR')")
     @GetMapping
     public ResponseEntity<List<ManutencaoResponseDTO>> listar() {
         return ResponseEntity.ok(manutencaoService.listar());
     }
 
+    @PreAuthorize("hasAnyAuthority('ROLE_MASTER','ROLE_CONTRIBUTOR','ROLE_AUDITOR')")
     @GetMapping("/{id}")
     public ResponseEntity<ManutencaoResponseDTO> buscarPorId(@PathVariable Long id) {
         return ResponseEntity.ok(manutencaoService.buscarPorId(id));
     }
 
+    @PreAuthorize("hasAnyAuthority('ROLE_MASTER','ROLE_CONTRIBUTOR')")
     @PutMapping("/{id}")
     public ResponseEntity<ManutencaoResponseDTO> atualizarPorId(@PathVariable Long id,
             @RequestBody @Valid ManutencaoRequestDTO dto) {
         return ResponseEntity.ok(manutencaoService.atualizarPorId(id, dto));
     }
 
+    @PreAuthorize("hasAuthority('ROLE_MASTER')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> removerPorId(@PathVariable Long id) {
         manutencaoService.removerPorId(id);

@@ -8,6 +8,7 @@ import com.projeto.web2.exception.RegraNegocioException;
 import com.projeto.web2.model.*;
 import com.projeto.web2.repository.EquipamentoRepository;
 import com.projeto.web2.repository.FornecedorRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
@@ -60,13 +61,13 @@ public class EquipamentoServiceValidacaoSimples implements EquipamentoService {
 
     @Override
     public EquipamentoResponseDTO buscarPorId(Long id) {
-        Equipamento e = equipamentoRepository.buscarCompletoPorId(id).orElseThrow(() -> new RegraNegocioException("Equipamento não encontrado"));
+        Equipamento e = equipamentoRepository.buscarCompletoPorId(id).orElseThrow(() -> new EntityNotFoundException("Equipamento não encontrado"));
         return toResponse(e);
     }
 
     @Override
     public EquipamentoResponseDTO atualizarPorId(Long id, EquipamentoRequestDTO dto) {
-        Equipamento e = equipamentoRepository.findById(id).orElseThrow(() -> new RegraNegocioException("Equipamento não encontrado"));
+        Equipamento e = equipamentoRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Equipamento não encontrado"));
 
         e.setNome(dto.getNome());
         e.setValor(dto.getValor());
@@ -80,6 +81,9 @@ public class EquipamentoServiceValidacaoSimples implements EquipamentoService {
 
     @Override
     public void removerPorId(Long id) {
+        if (!equipamentoRepository.existsById(id)) {
+            throw new EntityNotFoundException("Equipamento não encontrado");
+        }
         equipamentoRepository.deleteById(id);
     }
 
@@ -109,7 +113,7 @@ public class EquipamentoServiceValidacaoSimples implements EquipamentoService {
 
     private Equipamento toEntity(EquipamentoRequestDTO dto) {
         Fornecedor fornecedor = fornecedorRepository.findById(dto.getFornecedorId())
-            .orElseThrow(() -> new RegraNegocioException("Fornecedor não encontrado"));
+            .orElseThrow(() -> new EntityNotFoundException("Fornecedor não encontrado"));
 
         return Equipamento.builder()
             .nome(dto.getNome())

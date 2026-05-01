@@ -9,6 +9,7 @@ import com.projeto.web2.model.Equipamento;
 import com.projeto.web2.model.Manutencao;
 import com.projeto.web2.repository.EquipamentoRepository;
 import com.projeto.web2.repository.ManutencaoRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -62,10 +63,10 @@ public class ManutencaoServiceImpl implements ManutencaoService {
     @Override
     public ManutencaoResponseDTO atualizarPorId(Long id, ManutencaoRequestDTO dto) {
         Manutencao m = manutencaoRepository.findById(id)
-            .orElseThrow(() -> new RegraNegocioException("Manutenção não encontrada"));
+            .orElseThrow(() -> new EntityNotFoundException("Manutenção não encontrada"));
 
         Equipamento equipamento = equipamentoRepository.findById(dto.getEquipamentoId())
-            .orElseThrow(() -> new RegraNegocioException("Equipamento não encontrado"));
+            .orElseThrow(() -> new EntityNotFoundException("Equipamento não encontrado"));
 
         m.setDescricao(dto.getDescricao());
         m.setData(dto.getData());
@@ -77,6 +78,9 @@ public class ManutencaoServiceImpl implements ManutencaoService {
 
     @Override
     public void removerPorId(Long id) {
+        if (!manutencaoRepository.existsById(id)) {
+            throw new EntityNotFoundException("Manutenção não encontrada");
+        }
         manutencaoRepository.deleteById(id);
     }
 

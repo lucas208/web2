@@ -1,11 +1,9 @@
 package com.projeto.web2.config;
 
 import com.projeto.web2.model.*;
-import com.projeto.web2.repository.EquipamentoRepository;
-import com.projeto.web2.repository.FornecedorRepository;
-import com.projeto.web2.repository.ManutencaoRepository;
-import com.projeto.web2.repository.ProjetoRepository;
+import com.projeto.web2.repository.*;
 import jakarta.annotation.PostConstruct;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
@@ -20,22 +18,27 @@ public class DataInitializer {
     private final EquipamentoRepository equipamentoRepository;
     private final ProjetoRepository projetoRepository;
     private final ManutencaoRepository manutencaoRepository;
-
+    private final UsuarioRepository usuarioRepository;
+    private final UserRoleRepository userRoleRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public DataInitializer(FornecedorRepository fornecedorRepository,
                            EquipamentoRepository equipamentoRepository,
                            ProjetoRepository projetoRepository,
-                           ManutencaoRepository manutencaoRepository) {
+                           ManutencaoRepository manutencaoRepository, UsuarioRepository usuarioRepository, UserRoleRepository userRoleRepository, PasswordEncoder passwordEncoder) {
         this.fornecedorRepository = fornecedorRepository;
         this.equipamentoRepository = equipamentoRepository;
         this.projetoRepository = projetoRepository;
         this.manutencaoRepository = manutencaoRepository;
+        this.usuarioRepository = usuarioRepository;
+        this.userRoleRepository = userRoleRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @PostConstruct
     public void init() {
 
-        if (fornecedorRepository.count() > 0) {
+        if (usuarioRepository.count() > 0) {
             return;
         }
 
@@ -81,6 +84,27 @@ public class DataInitializer {
         manutencaoRepository.save(new Manutencao(null, "Calibração do sensor", LocalDate.now().minusDays(1), 150.0, e1));
 
         manutencaoRepository.save(new Manutencao(null, "Lubrificação motor", LocalDate.now().minusDays(2), 500.0, e2));
+
+        UserRole roleMaster = userRoleRepository.save(new UserRole("ROLE_MASTER"));
+        UserRole roleContributor = userRoleRepository.save(new UserRole("ROLE_CONTRIBUTOR"));
+        UserRole roleAuditor = userRoleRepository.save(new UserRole("ROLE_AUDITOR"));
+
+        User master = new User();
+        master.setUsername("master");
+        master.setPassword(passwordEncoder.encode("123"));
+        master.setRoles(new HashSet<>(Set.of(roleMaster)));
+
+        User contributor = new User();
+        contributor.setUsername("contrib");
+        contributor.setPassword(passwordEncoder.encode("123"));
+        contributor.setRoles(new HashSet<>(Set.of(roleContributor)));
+
+        User auditor = new User();
+        auditor.setUsername("auditor");
+        auditor.setPassword(passwordEncoder.encode("123"));
+        auditor.setRoles(new HashSet<>(Set.of(roleAuditor)));
+
+        usuarioRepository.saveAll(List.of(master, contributor, auditor));
 
         System.out.println(">>> Seed inicial COMPLETO carregado com sucesso!");
     }

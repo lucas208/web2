@@ -8,6 +8,7 @@ import com.projeto.web2.exception.RegraNegocioException;
 import com.projeto.web2.model.Equipamento;
 import com.projeto.web2.model.Projeto;
 import com.projeto.web2.repository.ProjetoRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -52,14 +53,14 @@ public class ProjetoServiceImpl implements ProjetoService {
     @Override
     public ProjetoResponseDTO buscarPorId(Long id) {
         Projeto projeto = projetoRepository.findById(id)
-            .orElseThrow(() -> new RegraNegocioException("Projeto não encontrado"));
+            .orElseThrow(() -> new EntityNotFoundException("Projeto não encontrado"));
         return toResponse(projeto);
     }
 
     @Override
     public ProjetoResponseDTO atualizarPorId(Long id, ProjetoRequestDTO dto) {
         Projeto projeto = projetoRepository.findById(id)
-            .orElseThrow(() -> new RegraNegocioException("Projeto não encontrado"));
+            .orElseThrow(() -> new EntityNotFoundException("Projeto não encontrado"));
 
         projeto.setNome(dto.getNome());
         projeto.setDescricao(dto.getDescricao());
@@ -69,8 +70,12 @@ public class ProjetoServiceImpl implements ProjetoService {
 
     @Override
     public void removerPorId(Long id) {
+        if (!projetoRepository.existsById(id)) {
+            throw new EntityNotFoundException("Projeto não encontrado");
+        }
         projetoRepository.deleteById(id);
     }
+
     private Projeto toEntity(ProjetoRequestDTO dto) {
         return new Projeto(
             null,
